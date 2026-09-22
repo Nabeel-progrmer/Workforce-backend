@@ -14,12 +14,16 @@ dns.setServers(["1.1.1.1", "8.8.8.8"]);
 const app = express();
 const PORT = Number(process.env.PORT) || 5000;
 const mongoUri = process.env.MONGO_URI || process.env.MONGODB_URI;
+const isVercel = Boolean(process.env.VERCEL);
 
 if (!mongoUri) {
   throw new Error("MONGO_URI is missing from server/.env");
 }
 
 if (!process.env.JWT_SECRET || process.env.JWT_SECRET.startsWith("CHANGE_")) {
+  if (isVercel) {
+    throw new Error("JWT_SECRET must be configured in Vercel environment variables");
+  }
   process.env.JWT_SECRET = "workforce_local_dev_secret_7f3b9c2e1a6d4f8b0c5e9a2d7f1b6c3e";
 }
 
@@ -87,17 +91,27 @@ try {
     await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 5000 });
     console.log(`MongoDB connected: ${mongoose.connection.name}`);
   } catch (atlasErr) {
-    console.warn("Cloud MongoDB connection failed, attempting local MongoDB connection:", atlasErr.message);
-    await mongoose.connect(localUri, { serverSelectionTimeoutMS: 5000 });
-    console.log(`Local MongoDB connected: ${mongoose.connection.name}`);
+    if (isVercel) {
+      console.error("Cloud MongoDB connection failed:", atlasErr.message);
+    } else {
+      console.warn("Cloud MongoDB connection failed, attempting local MongoDB connection:", atlasErr.message);
+      await mongoose.connect(localUri, { serverSelectionTimeoutMS: 5000 });
+      console.log(`Local MongoDB connected: ${mongoose.connection.name}`);
+    }
   }
 
-  app.listen(PORT, () => {
-    console.log(`🚀 Workforce API running on http://localhost:${PORT}`);
-  });
+  if (!isVercel) {
+    app.listen(PORT, () => {
+      console.log(`Workforce API running on http://localhost:${PORT}`);
+    });
+  }
 } catch (error) {
   console.error("MongoDB connection failed:", error.message);
-  app.listen(PORT, () => {
-    console.log(`🚀 Workforce API running in offline mode on http://localhost:${PORT}`);
-  });
+  if (!isVercel) {
+    app.listen(PORT, () => {
+      console.log(`Workforce API running in offline mode on http://localhost:${PORT}`);
+    });
+  }
 }
+
+export default app;
