@@ -115,4 +115,32 @@ try {
   }
 }
 
+// Root Route - Homepage for the backend API
+app.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Workforce Backend API is running successfully!",
+    timestamp: new Date()
+  });
+});
+
+// Fallback for any other route not found
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `Route ${req.originalUrl} not found on Workforce Backend API`,
+    availableRoutes: [
+      "/api/health",
+      "/api/auth/register",
+      "/api/auth/login",
+      "/api/auth/logout",
+      "/api/auth/me",
+      "/api/workforce/employees",
+      "/api/workforce/employees/:id",
+      "/api/workforce/tasks",
+      "/api/workforce/tasks/:id"
+    ]
+  });
+});
+
 export default app;
