@@ -28,11 +28,12 @@ if (!process.env.JWT_SECRET || process.env.JWT_SECRET.startsWith("CHANGE_")) {
 }
 
 const allowedOrigins = new Set([
-  process.env.CLIENT_URL || "http://localhost:5173",
+  process.env.CLIENT_URL,
+  "https://workforce-management-y4bb.vercel.app",
   "http://localhost:5173",
   "http://localhost:5174",
   "http://localhost:3000"
-]);
+].filter(Boolean));
 
 app.use(
   cors({
@@ -40,7 +41,7 @@ app.use(
       if (!origin || allowedOrigins.has(origin)) {
         return callback(null, true);
       }
-      return callback(null, true); // Allow dev origins dynamically
+      return callback(null, false);
     },
     credentials: true
   })
