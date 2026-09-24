@@ -26,14 +26,26 @@ if (!process.env.JWT_SECRET || process.env.JWT_SECRET.startsWith("CHANGE_")) {
   }
   process.env.JWT_SECRET = "workforce_local_dev_secret_7f3b9c2e1a6d4f8b0c5e9a2d7f1b6c3e";
 }
-
 const allowedOrigins = new Set([
   process.env.CLIENT_URL,
+  "https://workforce-management-crgn.vercel.app",
   "https://workforce-management-y4bb.vercel.app",
   "http://localhost:5173",
   "http://localhost:5174",
   "http://localhost:3000"
 ].filter(Boolean));
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.has(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true
+  })
+);
 
 app.use(
   cors({
