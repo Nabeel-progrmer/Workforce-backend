@@ -3,8 +3,8 @@ import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
 
 import User from "../models/User.js";
-import Department from "../models/Department.js";
-import Shift from "../models/Shift.js";
+import Department from "../models/department.js";
+import Shift from "../models/shift.js";
 import Attendance from "../models/Attendance.js";
 import Leave from "../models/Leave.js";
 import Task from "../models/Task.js";
