@@ -51,6 +51,15 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser());
 
+// Root Route - API Homepage
+app.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Workforce Backend API is running successfully!",
+    timestamp: new Date()
+  });
+});
+
 // Health Check
 app.get("/api/health", (req, res) => {
   res.json({
@@ -68,11 +77,21 @@ app.use("/api/workforce", workforceRoutes);
 // Direct Aliases for direct endpoint access
 app.use("/api", workforceRoutes);
 
-// 404 Handler
+// 404 Handler (Fallback for unhandled routes)
 app.use((req, res) => {
   res.status(404).json({
     success: false,
-    message: `Route ${req.originalUrl} not found`
+    message: `Route ${req.originalUrl} not found on Workforce Backend API`,
+    availableRoutes: [
+      "/",
+      "/api/health",
+      "/api/auth/register",
+      "/api/auth/login",
+      "/api/auth/logout",
+      "/api/auth/me",
+      "/api/workforce/employees",
+      "/api/workforce/tasks"
+    ]
   });
 });
 
@@ -114,33 +133,5 @@ try {
     });
   }
 }
-
-// Root Route - Homepage for the backend API
-app.get("/", (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "Workforce Backend API is running successfully!",
-    timestamp: new Date()
-  });
-});
-
-// Fallback for any other route not found
-app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    message: `Route ${req.originalUrl} not found on Workforce Backend API`,
-    availableRoutes: [
-      "/api/health",
-      "/api/auth/register",
-      "/api/auth/login",
-      "/api/auth/logout",
-      "/api/auth/me",
-      "/api/workforce/employees",
-      "/api/workforce/employees/:id",
-      "/api/workforce/tasks",
-      "/api/workforce/tasks/:id"
-    ]
-  });
-});
 
 export default app;
