@@ -44,6 +44,12 @@ const userSchema = new mongoose.Schema(
       default: "Employee"
     },
 
+    avatarId: {
+      type: String,
+      enum: ["professional", "team-lead", "operations", "security", "developer", "project", "finance", "schedule"],
+      default: "professional"
+    },
+
     department: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Department",

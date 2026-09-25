@@ -32,7 +32,7 @@ import {
   markNotificationRead,
   dashboard
 } from "../controllers/workforceController.js";
-import { getMe } from "../controllers/authController.js";
+import { getMe, updateProfileAvatar } from "../controllers/authController.js";
 import { protect, allowRoles } from "../middleware/auth.js";
 
 const router = express.Router();
@@ -42,6 +42,7 @@ router.use(protect);
 
 /* PROFILE */
 router.get("/profile", getMe);
+router.patch("/profile/avatar", updateProfileAvatar);
 
 /* METRICS / DASHBOARD */
 router.get("/dashboard", allowRoles("ceo", "manager"), dashboard);

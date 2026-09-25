@@ -27,6 +27,7 @@ const cleanUser = (user, rawQrToken = "") => ({
   _id: user._id,
   employeeId: user.employeeId || `EMP-${user._id.toString().slice(-6).toUpperCase()}`,
   name: user.name,
+  avatarId: user.avatarId === "sunrise" ? "professional" : user.avatarId || "professional",
   email: user.email,
   role: user.role.toLowerCase(),
   phone: user.phone || "",
@@ -192,6 +193,30 @@ export const getMe = async (req, res, next) => {
       success: true,
       user: cleanUser(user)
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateProfileAvatar = async (req, res, next) => {
+  try {
+    const allowedAvatars = ["professional", "team-lead", "operations", "security", "developer", "project", "finance", "schedule"];
+    const { avatarId } = req.body || {};
+    if (!allowedAvatars.includes(avatarId)) {
+      return res.status(400).json({ success: false, message: "Choose one of the available profile avatars." });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { avatarId },
+      { new: true, runValidators: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found." });
+    }
+
+    return res.status(200).json({ success: true, user: cleanUser(user), message: "Profile avatar updated." });
   } catch (error) {
     next(error);
   }
