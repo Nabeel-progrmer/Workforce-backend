@@ -284,6 +284,61 @@ export const updateDepartment = async (req, res, next) => {
   }
 };
 
+export const assignDepartmentWorkers = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const workerIds = req.body?.workerIds;
+
+    if (!validId(id)) {
+      return res.status(400).json({ success: false, message: "Invalid department ID." });
+    }
+    if (!Array.isArray(workerIds)) {
+      return res.status(400).json({ success: false, message: "Worker IDs must be provided as a list." });
+    }
+
+    const selectedIds = [...new Set(workerIds.map(String))];
+    if (selectedIds.some((workerId) => !validId(workerId))) {
+      return res.status(400).json({ success: false, message: "One or more worker IDs are invalid." });
+    }
+
+    const department = await Department.findById(id);
+    if (!department) {
+      return res.status(404).json({ success: false, message: "Department not found." });
+    }
+
+    const workerRoles = { $in: ["worker", "Worker"] };
+    const selectedWorkers = await User.find({ _id: { $in: selectedIds }, role: workerRoles }).select("_id");
+    if (selectedWorkers.length !== selectedIds.length) {
+      return res.status(400).json({ success: false, message: "Only existing workers can be assigned to a department." });
+    }
+
+    const workersToUnassign = await User.find({
+      department: department._id,
+      role: workerRoles,
+      _id: { $nin: selectedIds }
+    }).select("_id");
+
+    const operations = [
+      ...selectedIds.map((workerId) => ({
+        updateOne: { filter: { _id: workerId, role: workerRoles }, update: { $set: { department: department._id } } }
+      })),
+      ...workersToUnassign.map((worker) => ({
+        updateOne: { filter: { _id: worker._id, role: workerRoles }, update: { $set: { department: null } } }
+      }))
+    ];
+
+    if (operations.length) await User.bulkWrite(operations);
+
+    return res.json({
+      success: true,
+      message: "Department worker assignments saved.",
+      assignedCount: selectedIds.length
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 /* =========================================
    SHIFTS
    ========================================= */

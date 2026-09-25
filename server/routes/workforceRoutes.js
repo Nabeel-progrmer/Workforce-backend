@@ -8,6 +8,7 @@ import {
   getDepartments,
   createDepartment,
   updateDepartment,
+  assignDepartmentWorkers,
   getShifts,
   createShift,
   updateShift,
@@ -58,6 +59,7 @@ router.patch("/workers/:id/activate", allowRoles("ceo", "manager"), activateWork
 router.get("/departments", getDepartments);
 router.post("/departments", allowRoles("ceo", "manager"), createDepartment);
 router.put("/departments/:id", allowRoles("ceo", "manager"), updateDepartment);
+router.put("/departments/:id/workers", allowRoles("ceo", "manager"), assignDepartmentWorkers);
 
 /* SHIFTS */
 router.get("/shifts", getShifts);
